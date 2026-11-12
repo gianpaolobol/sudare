@@ -18,7 +18,7 @@ const esc = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[char])
 const external = 'target="_blank" rel="noopener"'
-const attribution = '<p class="credits">Mappa e coordinate © <a href="https://www.openstreetmap.org/copyright" ' + external + '>OpenStreetMap contributors</a></p>'
+const attribution = '<p class="credits">Mappa e coordinate © <a href="https://www.openstreetmap.org/copyright" ' + external + '>OpenStreetMap contributors</a> · <a href="./privacy.html" ' + external + '>Privacy</a></p>'
 const options = [[0, 'Tutta Bologna'], [1000, 'Entro 1 km'], [3000, 'Entro 3 km'], [5000, 'Entro 5 km']]
 const label = type => categories[type].label
 const details = venue => '#locale/' + venue.id
@@ -162,25 +162,25 @@ function updateResults() {
   else target.innerHTML = cards(items)
 }
 
-function locate() {
-  if (!navigator.geolocation) {
-    state.status = 'Posizione non disponibile. Le distanze partono dal centro di Bologna.'
-    render()
-    return
-  }
+async function locate() {
+  if (state.locating) return
   state.locating = true
   render()
-  navigator.geolocation.getCurrentPosition(({ coords }) => {
+  try {
+    const options = { timeout: 10000, maximumAge: 30000 }
+    const nativeLocation = window.Capacitor?.isNativePlatform() && window.Capacitor.Plugins.Geolocation
+    const { coords } = nativeLocation
+      ? await nativeLocation.getCurrentPosition(options)
+      : await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, options))
     state.origin = { lat: coords.latitude, lon: coords.longitude }
     state.radius = 1000
-    state.locating = false
     state.status = 'Distanze dalla tua posizione.'
-    render()
-  }, () => {
-    state.locating = false
+  } catch {
     state.status = 'Posizione non disponibile. Puoi comunque consultare i locali di Bologna.'
+  } finally {
+    state.locating = false
     render()
-  }, { timeout: 10000, maximumAge: 30000 })
+  }
 }
 
 function suggest() {

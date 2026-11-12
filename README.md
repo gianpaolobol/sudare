@@ -30,3 +30,15 @@ Mappa e coordinate © [OpenStreetMap contributors](https://www.openstreetmap.org
 dati cartografici sotto ODbL. La mappa usa [Leaflet](https://leafletjs.com/).
 Lista, filtri e preferiti restano disponibili se le risorse cartografiche
 esterne sono temporaneamente irraggiungibili.
+
+## iPhone
+
+Esegui `npm ci` e `npm run build:ios`, quindi apri
+`ios/App/App.xcodeproj` con Xcode. Il workflow **iOS build** compila
+il progetto per il simulatore e, all’avvio manuale con l’opzione
+`upload`, può firmare e caricare la build su App Store Connect.
+Il caricamento richiede un certificato Apple Distribution con chiave
+privata, un profilo App Store per `it.gianpaolofranceschini.sudare`
+e una chiave App Store Connect. Configurali come segreti Actions con
+i nomi dichiarati nel workflow. I test e la pubblicazione si gestiscono
+da App Store Connect dopo l’elaborazione della build.

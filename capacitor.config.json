@@ -1,0 +1,6 @@
+{
+  "appId": "it.gianpaolofranceschini.sudare",
+  "appName": "Sudare",
+  "webDir": "dist/ios",
+  "ios": { "contentInset": "never" }
+}
