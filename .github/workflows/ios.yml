@@ -34,6 +34,15 @@ jobs:
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/sudare-build" \
             CODE_SIGNING_ALLOWED=NO build
+      - name: Capture App Store screenshot
+        if: inputs.upload != true
+        run: bash scripts/capture-ios.sh
+      - uses: actions/upload-artifact@v4
+        if: inputs.upload != true
+        with:
+          name: sudare-app-store-screenshot
+          path: build/screenshots/sudare-scopri.jpg
+          if-no-files-found: error
       - name: Archive and upload
         if: inputs.upload == true
         env:
