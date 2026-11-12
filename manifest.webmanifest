@@ -1,0 +1,12 @@
+{
+  "id": "./",
+  "name": "Sudare · Bologna",
+  "short_name": "Sudare",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3fb",
+  "theme_color": "#f7f3fb",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml"}]
+}
