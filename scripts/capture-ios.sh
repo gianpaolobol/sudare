@@ -13,7 +13,7 @@ sys.exit("iPhone 17 Pro Max simulator is missing")
 xcrun simctl boot "$device"
 trap 'xcrun simctl shutdown "$device" || true' EXIT
 xcrun simctl bootstatus "$device" -b
-xcrun simctl status_bar "$device" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState unplugged --batteryLevel 100
+xcrun simctl status_bar "$device" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState discharging --batteryLevel 100
 xcrun simctl ui "$device" appearance light
 xcrun simctl install "$device" "$RUNNER_TEMP/sudare-build/Build/Products/Release-iphonesimulator/App.app"
 xcrun simctl launch "$device" it.gianpaolofranceschini.sudare

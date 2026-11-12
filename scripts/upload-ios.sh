@@ -42,6 +42,9 @@ security unlock-keychain -p "$keychain_password" "$keychain"
 security list-keychains -d user -s "$keychain" "$HOME/Library/Keychains/login.keychain-db"
 security import "$working_dir/distribution.p12" -k "$keychain" -P "$IOS_DISTRIBUTION_P12_PASSWORD" -T /usr/bin/codesign
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain" >/dev/null
+identity="$(security find-identity -v -p codesigning "$keychain" | awk '$1 == "1)" { print $2 }')"
+[[ "$identity" =~ ^[[:xdigit:]]{40}$ ]] || { echo 'No valid distribution identity found'; exit 1; }
+
 
 cat > "$working_dir/export.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -58,7 +61,7 @@ PLIST
 
 xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
   -destination 'generic/platform=iOS' -archivePath "$working_dir/Sudare.xcarchive" \
-  DEVELOPMENT_TEAM="$team_id" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' \
+  DEVELOPMENT_TEAM="$team_id" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$identity" \
   PROVISIONING_PROFILE_SPECIFIER="$profile_uuid" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" archive
 xcodebuild -exportArchive -archivePath "$working_dir/Sudare.xcarchive" \
   -exportPath "$working_dir/export" -exportOptionsPlist "$working_dir/export.plist"
