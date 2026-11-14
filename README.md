@@ -1,5 +1,8 @@
 # Sudare
 
+> **Copyright © 2026 Gian Paolo Franceschini — All rights reserved for original proprietary contributions.** See [LICENSE.md](LICENSE.md). Third-party licenses and GitHub's permitted platform uses remain applicable.
+
+
 Guida ai locali da ballo nel Comune di Bologna, con mappa OpenStreetMap.
 L'interfaccia riprende da ByteBudget la colonna fissa dei filtri, la lista
 delle schede, il dettaglio e le tab Scopri e Salvati.
