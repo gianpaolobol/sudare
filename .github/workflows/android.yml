@@ -32,6 +32,7 @@ jobs:
           node scripts/build-ios.mjs
           npx cap add android
           npx cap sync android
+          node scripts/prepare-android.mjs
       - name: Build installable debug APK
         run: |
           cd android

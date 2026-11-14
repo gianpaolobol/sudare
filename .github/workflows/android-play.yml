@@ -36,6 +36,7 @@ jobs:
           node scripts/build-ios.mjs
           npx cap add android
           npx cap sync android
+          node scripts/prepare-android.mjs
       - name: Configure signing
         env:
           KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
