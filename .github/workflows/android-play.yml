@@ -1,0 +1,89 @@
+name: Android Play internal test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  play-internal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check signing and Play credentials
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          for value in "$KEYSTORE" "$STORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" "$PLAY_JSON"; do
+            if [ -z "$value" ]; then echo "::error::Missing Android signing or Google Play secret"; exit 1; fi
+          done
+      - name: Prepare build
+        run: |
+          npm ci
+          npm test
+          npm install --no-save --package-lock=false @capacitor/android@8.4.0
+          node scripts/build-ios.mjs
+          npx cap add android
+          npx cap sync android
+      - name: Configure signing
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/sudare-release.jks"
+          echo "SUD_KEYSTORE=$RUNNER_TEMP/sudare-release.jks" >> "$GITHUB_ENV"
+          echo "SUD_STORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "SUD_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "SUD_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
+          cat >> android/app/build.gradle <<'GRADLE'
+          android {
+            signingConfigs {
+              sudareRelease {
+                storeFile file(System.getenv('SUD_KEYSTORE'))
+                storePassword System.getenv('SUD_STORE_PASSWORD')
+                keyAlias System.getenv('SUD_KEY_ALIAS')
+                keyPassword System.getenv('SUD_KEY_PASSWORD')
+              }
+            }
+            buildTypes {
+              release {
+                signingConfig signingConfigs.sudareRelease
+              }
+            }
+          }
+          GRADLE
+      - name: Build signed Android App Bundle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sudare-play-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+      - name: Upload to Google Play internal track
+        env:
+          PLAY_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_JSON" > "$RUNNER_TEMP/google-play.json"
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: it.gianpaolofranceschini.sudare
+          releaseFiles: android/app/build/outputs/bundle/release/*.aab
+          track: internal
+          status: draft
