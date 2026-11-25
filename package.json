@@ -8,12 +8,12 @@
     "build:ios": "node scripts/build-ios.mjs && cap sync ios"
   },
   "dependencies": {
-    "@capacitor/core": "8.4.0",
+    "@capacitor/core": "8.4.3",
     "@capacitor/geolocation": "8.2.4",
-    "@capacitor/ios": "8.4.0",
+    "@capacitor/ios": "8.4.3",
     "leaflet": "1.9.4"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.4.0"
+    "@capacitor/cli": "8.4.3"
   }
 }
